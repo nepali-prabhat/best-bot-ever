@@ -48,15 +48,16 @@ func selectRandom(arr []string) string {
 func getHelloBasedOnHour() string {
 	now := time.Now()
 	hour := now.Hour()
-	if hour > 4 && hour < 12 {
+	if hour >= 0 && hour < 4 {
+		return "Oyasumi!"
+	} else if hour < 12 {
 		return "Ohayou!"
 	} else if hour < 16 {
 		return "Konnichiwa!"
 	} else if hour < 23 {
 		return "Konbanwa!"
-	} else {
-		return "Oyasumi!"
 	}
+	return "Nihou!"
 }
 
 func getMentions(command string) []string {
