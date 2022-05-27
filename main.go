@@ -30,7 +30,7 @@ var (
 var font *figletlib.Font
 
 func init() {
-	flag.StringVar(&Token, "t", "OTc5NDQ5NzIxNzcwODg1MTMw.GcLBda.INn6ONyghrxkNRSfXGSOyQIC8FHfvZk2c9ifnw", "Bot Token")
+	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
 	var b [8]byte
 	_, err := crypto_rand.Read(b[:])
