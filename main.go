@@ -131,6 +131,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(command, "say") {
 		handleSay(s, m, command)
 	}
+	if strings.HasPrefix(command, "show") {
+		handleShow(s, m, command)
+	}
 	if strings.HasPrefix(command, "help") {
 		handleHelp(s, m, command)
 	}
