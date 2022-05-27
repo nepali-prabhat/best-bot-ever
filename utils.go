@@ -25,6 +25,8 @@ func helpText() string {
 	msg.WriteString("- greet\n")
 	msg.WriteString("- insult\n")
 	msg.WriteString("- boobs\n")
+	msg.WriteString("- say\n")
+	msg.WriteString("- show\n")
 	msg.WriteString("You can also type !bitch help followed by any command learn about that command. Try !bitch help insult (─‿‿─)♡")
 	return msg.String()
 }
