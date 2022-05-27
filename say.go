@@ -9,7 +9,7 @@ import (
 )
 
 func handleSay(s *discordgo.Session, m *discordgo.MessageCreate, command string) {
-	message := strings.TrimSpace(command[len("say"):])
+	message := removeMentions(strings.TrimSpace(command[len("say"):]))
 	authorId := "<@" + m.Author.ID + ">"
 	var msg strings.Builder
 	fmt.Fprintf(&msg, "Master %v says\n```\n", authorId)

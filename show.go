@@ -33,14 +33,14 @@ func handleShow(s *discordgo.Session, m *discordgo.MessageCreate, command string
 		return
 	}
 
-	message := strings.TrimSpace(command[len("show"):])
+	mentions := getMentions(command)
+	message := removeMentions(strings.TrimSpace(command[len("show"):]))
 	if font == nil {
 		return
 	}
 	var tempMsg strings.Builder
 	figletlib.FPrintMsg(&tempMsg, message, font, 80, font.Settings(), "center")
-	msg := tempMsg.String()
-	text := strings.Split(msg, "\n")
+	text := strings.Split(tempMsg.String(), "\n")
 
 	// some constants for image properties
 	const (
@@ -50,7 +50,7 @@ func handleShow(s *discordgo.Session, m *discordgo.MessageCreate, command string
 		charWidth = 15 // subject to change with size and spacing
 	)
 
-	// calculating height dynamically
+	// calculating height and width dynamically
 	y := 0 + int(math.Ceil(size*dpi/72))
 	dy := int(math.Ceil(size * spacing * dpi / 72))
 	imgH := dy * len(text)
@@ -61,14 +61,15 @@ func handleShow(s *discordgo.Session, m *discordgo.MessageCreate, command string
 	rgba := image.NewRGBA(image.Rect(0, 0, imgW, imgH))
 	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
 
-	// measurement
-	// vert := charWidth
-	// for i := 0; i < 200; i++ {
-	// 	for j := 1; j < imgW/vert; j++ {
-	// 		rgba.Set(vert*j, 10+i, ruler)
-	// 	}
-	// 	rgba.Set(10+i, 10, ruler)
-	// }
+	/* To display ruler in the image for reference
+	        vert := charWidth
+	        for i := 0; i < 200; i++ {
+	            for j := 1; j < imgW/vert; j++ {
+	            rgba.Set(vert*j, 10+i, ruler)
+	            }
+	            rgba.Set(10+i, 10, ruler)
+		   }
+	*/
 
 	d := &img_font.Drawer{
 		Dst: rgba,
@@ -100,7 +101,7 @@ func handleShow(s *discordgo.Session, m *discordgo.MessageCreate, command string
 		fmt.Println("png buffer flush err, ", flushErr)
 	}
 	reader := bytes.NewReader(buff.Bytes())
-	_, err := s.ChannelFileSendWithMessage(m.ChannelID, "", fileName, reader)
+	_, err := s.ChannelFileSendWithMessage(m.ChannelID, strings.Join(mentions, ""), fileName, reader)
 	if err != nil {
 		fmt.Println("Error saying, ", err)
 	}

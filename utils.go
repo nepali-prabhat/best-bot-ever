@@ -65,3 +65,8 @@ func getMentions(command string) []string {
 	mentions := mentionRegex.FindAllString(command, -1)
 	return mentions
 }
+
+func removeMentions(command string) string {
+	mentionRegex := regexp.MustCompile(`<@!?(\d+)>`)
+	return mentionRegex.ReplaceAllString(command, "")
+}
