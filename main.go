@@ -440,8 +440,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			var tempMsg strings.Builder
 			figletlib.FPrintMsg(&tempMsg, message, font, 80, font.Settings(), "left")
 			var figletMsg string
-			if tempMsg.Len() > 1800 {
-				figletMsg = tempMsg.String()[:1800]
+			if tempMsg.Len() > 1900 {
+				tempMsg.Reset()
+				figletlib.FPrintMsg(&tempMsg, "too long msg", font, 80, font.Settings(), "left")
 			} else {
 				figletMsg = tempMsg.String()
 			}
