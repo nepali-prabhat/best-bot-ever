@@ -13,17 +13,20 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/lukesampson/figlet/figletlib"
 )
 
 var (
 	Token string
 )
+var font *figletlib.Font
 var greetings = []string{"(￣▽￣)ノ", "(*・ω・)ﾉ", "(°▽°)/", "( ´ ∀ ` )ﾉ", "(^-^*)/"}
 var boobs = []string{"( . Y . )", "( • )( • )ԅ(‾⌣‾ԅ)", "( . )(  .)", "( • ) ( • )-----(≖_≖)", "hentai master ⤜(˵ ͡°╭╮ ͡°˵)⤏"}
 var insults = []string{
@@ -228,6 +231,15 @@ func init() {
 		panic("Cannot seed random")
 	}
 	rand.Seed(int64(binary.LittleEndian.Uint16(b[:])))
+
+	cwd, _ := os.Getwd()
+	fontsdir := filepath.Join(cwd, "fonts")
+
+	f, err := figletlib.GetFontByName(fontsdir, "ghost")
+	if err != nil {
+		panic("Cannot find")
+	}
+	font = f
 }
 
 func getCommand(content string) (string, error) {
@@ -280,15 +292,15 @@ func helpText() string {
 }
 
 func greetHelpText() string {
-	return "___greet___:\nOrder me to greet yourself or anyone you mention. \n"
+	return "***greet***:\nOrder me to greet yourself or anyone you mention. \n"
 }
 
 func insultHelpText() string {
-	return "___insult___:\nOrder me to say hurtful things to your enemies. I'll insult whoever you mention. \n"
+	return "***insult***:\nOrder me to say hurtful things to your enemies. I'll insult whoever you mention. \n"
 }
 
 func boobsHelpText() string {
-	return "___boobs___:\nOrder me to show you boobs. I might get shy sometimes. \n"
+	return "***boobs***:\nOrder me to show you boobs. I might get shy sometimes. \n"
 }
 
 func getHelloBasedOnHour() string {
@@ -327,6 +339,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	// if m.Type == 19 {
+	// 	fmt.Println("reply type", m.Type)
+	// 	value, err := discordgo.Marshal(m.ReferencedMessage)
+	// 	if err == nil {
+	// 		fmt.Println("references msg type", string(value))
+	// 	}
+	// } else {
+	// 	fmt.Println("not  reply type", m.Type)
+	// }
+
 	var msg strings.Builder
 	if command == "" {
 		// Send a text message with the list of Gophers
@@ -340,9 +362,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		msg.Reset()
 		return
 	}
+	// fmt.Println("command: ", command)
 
 	mentions := getMentions(command)
-	fmt.Printf("content: %v , %v, %v", m.Content, m.Mentions, mentions)
 	if strings.HasPrefix(command, "greet") {
 		authorIds := []string{"<@" + m.Author.ID + ">"}
 		if len(mentions) > 0 {
@@ -378,7 +400,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if strings.HasPrefix(command, "boobs") {
-		authorIds := []string{"<@" + m.Author.ID + ">"}
+		authorIds := []string{
+			"<@" + m.Author.ID + ">"}
 		if len(mentions) > 0 {
 			authorIds = mentions
 		}
@@ -398,7 +421,42 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		msg.Reset()
 		return
 	}
+	if strings.HasPrefix(command, "test") {
+		msg.WriteString("      <:test1:979686404139384832>\n <:test1:979686404139384832>")
+		_, err := s.ChannelMessageSend(m.ChannelID, msg.String())
+		if err != nil {
+			fmt.Println("Error sending tests, ", err)
+		}
+		msg.Reset()
+		return
+	}
+	if strings.HasPrefix(command, "say") {
+		message := strings.TrimSpace(command[len("say"):])
+		authorId := "<@" + m.Author.ID + ">"
+		fmt.Fprintf(&msg, "Master %v says\n```\n", authorId)
+		if font == nil {
+			msg.WriteString(message)
+		} else {
+			var tempMsg strings.Builder
+			figletlib.FPrintMsg(&tempMsg, message, font, 80, font.Settings(), "left")
+			var figletMsg string
+			if tempMsg.Len() > 1800 {
+				figletMsg = tempMsg.String()[:1800]
+			} else {
+				figletMsg = tempMsg.String()
+			}
+			msg.WriteString(figletMsg)
+		}
+		msg.WriteString("\n```")
+		_, err := s.ChannelMessageSend(m.ChannelID, msg.String())
+		if err != nil {
+			fmt.Println("Error saying, ", err)
+		}
+		msg.Reset()
+		return
+	}
 	if strings.HasPrefix(command, "help") {
+		fmt.Fprintf(&msg, "<@%v> ", m.Author.ID)
 		if strings.HasSuffix(command, "greet") {
 			msg.WriteString(greetHelpText())
 		} else if strings.HasSuffix(command, "insult") {
@@ -410,7 +468,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		_, err := s.ChannelMessageSend(m.ChannelID, msg.String())
 		if err != nil {
-			fmt.Println("Error greeting, ", err)
+			fmt.Println("Error sending help, ", err)
 		}
 		msg.Reset()
 		return
