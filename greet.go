@@ -14,7 +14,7 @@ func handleGreet(s *discordgo.Session, m *discordgo.MessageCreate, command strin
 		authorIds = mentions
 	}
 	var msg strings.Builder
-	fmt.Fprintf(&msg, "%v Master %v \n %v \n", getHelloBasedOnHour(), strings.Join(authorIds, " "), selectRandom((greetings)))
+	fmt.Fprintf(&msg, "%v %v \n %v \n", getHelloBasedOnHour(), strings.Join(authorIds, " "), selectRandom((greetings)))
 	_, err := s.ChannelMessageSend(m.ChannelID, msg.String())
 	if err != nil {
 		fmt.Println("Error greeting, ", err)
